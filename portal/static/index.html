@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Metric On-Call</title>
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230a84ff'/%3E%3Cstop offset='1' stop-color='%23bf5af2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='9' fill='url(%23g)'/%3E%3Cpath d='M5 17h5l3-8 5 14 3-6h6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><i class="blob b4"></i></div>
+  <div class="shell">
+    <aside class="side glass">
+      <div class="brand"><div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg></div><div><b>Metric On-Call</b><small>AI analyst team</small></div></div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidefoot">
+        <div class="statuscard soft" id="status"></div>
+        <div class="theme" role="group" aria-label="Theme"><button data-act="theme" data-t="auto">Auto</button><button data-act="theme" data-t="light">Light</button><button data-act="theme" data-t="dark">Dark</button></div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="top glass" id="top"></header>
+      <section id="view"></section>
+    </main>
+  </div>
+  <div class="scrim" id="scrim" data-act="close"></div>
+  <aside class="drawer glass" id="drawer" aria-label="Agent details"></aside>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="/static/lib.js"></script>
+  <script src="/static/views.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

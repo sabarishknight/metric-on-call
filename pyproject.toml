@@ -1,0 +1,62 @@
+[project]
+name = "metric-on-call"
+version = "0.1.0"
+description = "Multi-agent AI analyst that investigates KPI anomalies end to end."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scipy>=1.11",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "duckdb>=1.0",
+    "mcp>=1.2",
+]
+
+[project.optional-dependencies]
+# agent graph + model providers
+agents = [
+    "langgraph>=0.2",
+    "langchain-core>=0.3",
+    "langchain-ollama>=0.2",
+    "langchain-google-genai>=2.0",
+]
+warehouse = ["dbt-core>=1.8", "dbt-duckdb>=1.8", "statsmodels>=0.14"]
+app = ["streamlit>=1.38"]
+obs = ["langfuse>=2.0"]
+cloud = [
+    "google-cloud-bigquery>=3.20",
+    "google-cloud-storage>=2.16",
+    "db-dtypes>=1.2",
+    "pyarrow>=15",
+    "dbt-bigquery>=1.8",
+]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+all = [
+    "metric-on-call[agents,warehouse,app,obs,dev]",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["common", "generator", "tools", "agents", "evals", "app", "pipelines", "portal"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = [
+    "slow: builds the full synthetic dataset (a few seconds)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]

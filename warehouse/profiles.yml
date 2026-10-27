@@ -1,0 +1,15 @@
+# Local: DuckDB file written by `make data`. Cloud: BigQuery (same models; see infra/).
+harbour_lane:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: ../data/harbour_lane.duckdb
+      schema: analytics
+    bigquery:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('GCP_PROJECT', 'my-project') }}"
+      dataset: analytics
+      location: australia-southeast1
+      threads: 4

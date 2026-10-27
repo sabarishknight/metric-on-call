@@ -7,7 +7,7 @@
 **Multi-agent root-cause analysis for business KPIs, built on a Google Cloud data platform.**
 Data engineering · analytics engineering · BI · machine learning · AI agents, in one project.
 
-![Status](https://img.shields.io/badge/status-design%20complete%20%7C%20build%20in%20progress-orange)
+![Status](https://img.shields.io/badge/status-v0.1%20built%20%7C%20LLM%20results%20pending-yellow)
 ![Python](https://img.shields.io/badge/python-3.11+-blue)
 ![LangGraph](https://img.shields.io/badge/agents-LangGraph-purple)
 ![BigQuery](https://img.shields.io/badge/warehouse-BigQuery%20%2B%20DuckDB-4285F4)
@@ -20,23 +20,40 @@ Data engineering · analytics engineering · BI · machine learning · AI agents
 
 ## 📌 Project status
 
-> **Design and architecture are complete; implementation is in progress.**
-> This README documents the system I am building: the agent design, the cloud
-> platform, the seeded-incident dataset and the evaluation plan. Every number in the
-> evaluation section is a **target**, not a result. Results will be committed to
-> `evals/results/` as they are produced.
+> **v0.1 is built.** The data generator, deterministic tools, MCP server, agent team and
+> evaluation harness exist and are covered by an offline test suite (`make test`). What is **not**
+> yet measured: LLM-backed agents (Ollama/Gemini). The numbers in `evals/results/` are for the
+> offline *scripted* pipeline, which uses the same governed tools but no language model. Treat the
+> LLM evaluation targets below as targets until `make eval-llm` has been run.
 
 | Component | State |
 | --- | --- |
-| Architecture, agent design, incident catalogue, eval plan | ✅ Done (this document) |
-| Synthetic data generator + seeded incidents | 🔨 Building |
-| dbt models + semantic metrics + tests | ⏳ Next |
-| Deterministic analysis tools + MCP server | ⏳ Next |
-| LangGraph agent team + human approval | ⏳ Next |
-| GCP pipeline (Pub/Sub → BigQuery → Workflows) | ⏳ Next |
-| Evaluation harness + public demo | ⏳ Next |
+| Architecture, agent design, incident catalogue, eval plan | ✅ Done |
+| Synthetic data generator + 13 seeded incidents with counterfactual truth | ✅ Built, tested |
+| Deterministic analysis tools + read-only MCP server | ✅ Built, tested |
+| Agent team (supervisor graph, skeptic loop, approval gate) | ✅ Built, tested offline; LangGraph graph written, run in CI |
+| Evaluation harness (scripted, naive baseline) | ✅ Built; LLM configs ⏳ |
+| dbt models + tests | 🟡 Written, not yet run end to end |
+| Google Cloud deployment (Terraform): BigQuery `raw` + `analytics`, landing bucket, nightly loader job, one-command deploy | ✅ Deployed and verified: all 12 tables loaded, offline eval reproduced reading from BigQuery |
+| Pub/Sub streaming, Cloud Workflows, agents hosted on Cloud Run | ⏳ Not built yet |
+| Streamlit app | 🟡 Written, not yet run |
+| Web portal (dashboard, live pipeline, per-agent output, tasks, approval) | 🟡 Written; unit-tested in isolation; first full run on your machine pending |
 
 ---
+
+## 🖥️ The portal (manual, on-demand runs)
+
+A local web app that shows the whole process: the agent pipeline lighting up step by step, every agent's output and
+tool calls, a KPI dashboard, a task board, and the human approval step. **Nothing runs on a schedule** (the nightly
+trigger is off by default); an investigation starts only when someone clicks **Run**, so it never burns cloud credits.
+
+```bash
+make portal          # local DuckDB data, opens http://127.0.0.1:8765
+make portal-cloud    # same UI, reading the BigQuery dataset (after `gcloud auth application-default login`)
+```
+
+Pick a planted incident, choose the brain (Offline baseline, Ollama or Gemini) and a pace, press Run, then approve or reject
+the brief. "Reveal planted ground truth" compares the agents' answer with what the generator really did.
 
 ## 🧨 The problem
 
@@ -222,7 +239,7 @@ flowchart LR
 ```mermaid
 flowchart LR
     A["Event or file arrives"] --> B["raw<br/>untouched copy"]
-    B --> C["staging<br/>cleaned, typed, deduplicated"]
+    B --> C["staging<br/>typed; duplicates flagged, not hidden"]
     C --> D["marts<br/>KPI tables"]
     D --> E["semantic metrics<br/>one definition of revenue"]
     E --> F["agent tools<br/>read-only, parameterised"]
@@ -352,7 +369,7 @@ metric-on-call/
 
 ---
 
-## 🚀 Quickstart *(planned for v0.1)*
+## 🚀 Quickstart
 
 ```bash
 git clone https://github.com/<your-username>/metric-on-call.git
@@ -365,7 +382,7 @@ make demo      # Streamlit app in Replay mode, no API key needed
 
 # optional: run the agents with a free local model
 ollama pull qwen3.5:9b
-MODEL_PROVIDER=ollama make eval
+MODEL_PROVIDER=ollama make eval-llm
 
 # optional: deploy to your own Google Cloud project
 make cloud-up  # terraform apply

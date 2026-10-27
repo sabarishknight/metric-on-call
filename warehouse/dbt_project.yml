@@ -1,0 +1,10 @@
+name: harbour_lane
+version: "1.0.0"
+config-version: 2
+profile: harbour_lane
+model-paths: ["models"]
+test-paths: ["tests"]
+models:
+  harbour_lane:
+    staging: {+materialized: view}
+    marts: {+materialized: table}

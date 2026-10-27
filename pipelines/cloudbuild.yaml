@@ -1,0 +1,9 @@
+# gcloud builds submit --config pipelines/cloudbuild.yaml --substitutions _IMAGE=<region>-docker.pkg.dev/<project>/moc/loader:latest .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "pipelines/Dockerfile", "-t", "${_IMAGE}", "."]
+images: ["${_IMAGE}"]
+substitutions:
+  _IMAGE: ""
+options:
+  logging: CLOUD_LOGGING_ONLY
