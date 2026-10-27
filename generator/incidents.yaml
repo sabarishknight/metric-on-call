@@ -1,0 +1,187 @@
+# Ground truth for the synthetic chain "Harbour Lane Café & Grocer".
+#
+# Hand-authored: WHAT was planted, WHERE and WHEN. The DOLLAR IMPACT of each incident is NOT
+# written here; `python -m generator.build` computes it by running the world with and without
+# the incident and writes the result to data/incident_truth.json.
+#
+# Data window: 2025-03-31 (Mon) .. 2026-10-18 (Sun), 81 whole weeks, 24 stores, 6 regions.
+# `held_out: true` incidents are never used for prompt tuning (enforced by evals/holdout.py).
+
+data_window:
+  start: 2025-03-31
+  end: 2026-10-18
+
+# category is the machine-readable true cause used by the scorers.
+# difficulty: easy | medium | hard
+incidents:
+  - id: 1
+    name: Card-terminal (POS) outage at three Western Sydney stores
+    category: pos_outage
+    difficulty: medium
+    held_out: false
+    date_from: 2025-07-23
+    date_to: 2025-07-24
+    scope: { region: Western Sydney, stores: [WS01, WS02, WS03], payment: card }
+    params: { card_multiplier: 0.08, cash_multiplier: 1.15 }
+    logged_in: [ops_log]
+    expected_stop_at_data_gate: false
+
+  - id: 2
+    name: One trading day loaded twice for five stores
+    category: pipeline_duplicate_load
+    difficulty: easy
+    held_out: false
+    date_from: 2025-08-26
+    date_to: 2025-08-26
+    scope: { stores: [IW01, IW02, ES01, ES02, NS01] }
+    params: { copies: 2 }
+    logged_in: []
+    expected_stop_at_data_gate: true      # raw defect only; no real business effect
+
+  - id: 3
+    name: Last two days missing for one region (freshness failure)
+    category: pipeline_missing_data
+    difficulty: easy
+    held_out: true
+    date_from: 2026-10-17
+    date_to: 2026-10-18
+    scope: { region: Southern Sydney }
+    params: {}
+    logged_in: []
+    expected_stop_at_data_gate: true
+
+  - id: 4
+    name: 2-for-1 muffin promo lifts muffins and drains croissants
+    category: promo_cannibalisation
+    difficulty: hard
+    held_out: false
+    date_from: 2025-10-13
+    date_to: 2025-10-26
+    scope: { stores: [CB01, CB02, ES01, ES02, ES03, NS01, NS02, NS03] }
+    params: { muffin_mix_multiplier: 1.6, croissant_mix_multiplier: 0.78, muffin_price_multiplier: 0.72 }
+    logged_in: [promos]
+    expected_stop_at_data_gate: false
+
+  - id: 5
+    name: Large coffee price rise of $0.50 and size mix shifts to regular
+    category: price_change
+    difficulty: medium
+    held_out: true
+    date_from: 2025-12-01
+    date_to: 2025-12-14                    # evaluation window; the change itself is permanent
+    scope: { stores: all, product: coffee_large }
+    params: { price_delta: 0.5, large_mix_multiplier: 0.72, regular_mix_multiplier: 1.18 }
+    logged_in: [price_changes]
+    expected_stop_at_data_gate: false
+
+  - id: 6
+    name: Slow unexplained decline at two stores (nothing logged anywhere)
+    category: external_unknown
+    difficulty: hard
+    held_out: false
+    date_from: 2026-01-19
+    date_to: 2026-03-22
+    scope: { stores: [IW04, SS03] }
+    params: { final_visit_multiplier: 0.80 }
+    logged_in: []
+    expected_stop_at_data_gate: false
+    expected_answer: not_in_our_data
+
+  - id: 7
+    name: Heavy rain week, visits fall everywhere
+    category: weather
+    difficulty: easy
+    held_out: false
+    date_from: 2025-11-24
+    date_to: 2025-11-28
+    scope: { stores: all }
+    params: { rain_mm_min: 25, rain_mm_max: 45 }
+    logged_in: [weather]
+    expected_stop_at_data_gate: false
+
+  - id: 8
+    name: Easter falls in a different week, year-on-year looks awful
+    category: calendar_shift
+    difficulty: medium
+    held_out: false
+    date_from: 2026-03-30
+    date_to: 2026-04-05
+    scope: { stores: all }
+    params: { good_friday: 0.78, easter_saturday: 0.88, easter_sunday: 0.72, easter_monday: 0.85 }
+    logged_in: [holidays]
+    expected_stop_at_data_gate: false
+    note: Easter 2025 fell in the week of 2025-04-14, so same-ISO-week comparisons are misleading.
+
+  - id: 9
+    name: Oat-milk supplier shortfall causes a stockout at six stores
+    category: stockout
+    difficulty: medium
+    held_out: true
+    date_from: 2026-05-26
+    date_to: 2026-05-29
+    scope: { stores: [NS01, NS02, NS03, NS04, IW01, IW02], product: oat_flat_white }
+    params: { oat_mix_multiplier: 0.1 }
+    logged_in: [ops_log]
+    expected_stop_at_data_gate: false
+
+  - id: 10
+    name: Delivery channel drops to zero for a day (partner integration down)
+    category: partner_outage
+    difficulty: easy
+    held_out: false
+    date_from: 2026-07-01
+    date_to: 2026-07-01
+    scope: { stores: all, channel: delivery }
+    params: { delivery_multiplier: 0.0 }
+    logged_in: [ops_log]
+    expected_stop_at_data_gate: false
+
+  - id: 11
+    name: One store closed five days for refurbishment
+    category: planned_closure
+    difficulty: easy
+    held_out: false
+    date_from: 2026-08-03
+    date_to: 2026-08-07
+    scope: { stores: [IW03] }
+    params: {}
+    logged_in: [store_events]
+    expected_stop_at_data_gate: false
+
+  - id: 12
+    name: Average basket rises overall but falls in every region (Simpson's paradox)
+    category: mix_shift
+    difficulty: hard
+    held_out: false
+    date_from: 2026-08-17
+    date_to: 2026-09-06
+    scope: { stores: all }
+    params: { basket_multiplier: 0.96, cbd_visit_multiplier: 2.0, other_visit_multiplier: 0.90 }
+    logged_in: []
+    expected_stop_at_data_gate: false
+
+  - id: 13
+    name: Rain and a card-terminal outage in the same week (two causes)
+    category: multi_cause
+    difficulty: hard
+    held_out: true
+    date_from: 2026-09-15
+    date_to: 2026-09-17
+    scope: { stores: all, outage_stores: [ES02, ES03] }
+    params: { rain_mm_min: 20, rain_mm_max: 30, card_multiplier: 0.10, cash_multiplier: 1.10, outage_day: 2026-09-16 }
+    logged_in: [weather, ops_log]
+    causes: [weather, pos_outage]
+    expected_stop_at_data_gate: false
+
+# Weeks (Monday dates) with nothing planted, used to measure false alarms.
+quiet_weeks:
+  - 2025-07-14
+  - 2025-07-07
+  - 2025-08-11
+  - 2025-09-15
+  - 2025-11-03
+  - 2025-11-17
+  - 2026-01-12
+  - 2026-07-13
+  - 2026-07-20
+  - 2026-09-28

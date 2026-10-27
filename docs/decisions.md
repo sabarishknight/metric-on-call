@@ -1,0 +1,12 @@
+# Design decisions and known limits
+
+1. **Deterministic tools do the maths; LLMs route, judge and write.** Agents have no SQL tool. "Revenue" has one definition (`tools/metrics.py`, mirrored in `warehouse/models/marts/kpi_daily.sql`).
+2. **Data-quality gate first.** The monitor reads data as loaded, so duplicate or missing loads look like business anomalies. Incidents 2 and 3 must stop at the gate with no business story.
+3. **Staging does not silently de-duplicate.** The README originally said staging was "deduplicated". It now flags duplicates (`dup_rank`) and fails the uniqueness test loudly; marts keep `dup_rank = 1`. A silent fix would hide the very fault the Data Quality agent is meant to report.
+4. **Counterfactual ground truth.** Each incident's true impact is computed by simulating the same world with and without the effect (`generator/build.py: compute_truth`), not read off the injected parameters.
+5. **Held-out incidents (3, 5, 9, 13).** Prompts are hash-locked (`evals/prompt.lock`); held-out scores are marked invalid if prompts change after locking. **Caveat:** the deterministic tool thresholds (monitor, hypothesis scores, DQ checks) were tuned while building and did see all 13 incidents. The scripted pipeline's held-out score is therefore *not* a clean generalisation estimate. It shows the tools can express the answer, not that they would on unseen incidents.
+6. **Impact accuracy limits.** Median dollar error on the scripted pipeline is a few percent for large effects; small effects are near the placebo noise floor and are labelled low confidence. Multi-cause splits (incident 13) are attributed less accurately than the total.
+7. **Scripted model is a baseline, not an LLM.** It forwards what governed tools return. It exists so tests, CI and the Replay demo need no API key. Any claim about LLM agents needs `make eval-llm`.
+8. **Infra deviation.** README described Pub/Sub → Workflows. v0.1 ships a simpler Cloud Scheduler → Cloud Run job loader (`infra/`). Same landing/raw/analytics layout.
+9. **Human approval.** Nothing is published (brief, dashboard annotation, ticket, Slack) before an explicit approve; reject returns to the supervisor (max 2).
+10. **Untested here.** The build environment had no access to PyPI or GitHub, so DuckDB, dbt, LangGraph, Streamlit and Terraform code was written to spec but not executed. See the status table in the README.
